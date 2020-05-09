@@ -25,36 +25,36 @@ namespace FilterTask.Tests
         [TestCase(new[] {-1, 0, 111, -11, -1}, 1, ExpectedResult = new int[] {-1, 111, -11, -1})]
         [TestCase(new[] {0, 0, 0, 0, 0}, 5, ExpectedResult = new int[0] { })]
         [TestCase(new[] {0, 0, 0, 0, 0}, 0, ExpectedResult = new int[] {0, 0, 0, 0, 0})]
-        public int[] FilterByDigit_With_Correct_Digits_Return_New_Array(int[] array, int digit) =>
+        public int[] FilterByDigit_WithCorrectDigits_ReturnNewArray(int[] array, int digit) =>
             FilterByDigit(array, digit);
 
         [Test]
         [Category("Exception tests.")]
-        public void FilterByDigit_Array_Is_Empty_Throw_ArgumentException() =>
+        public void FilterByDigit_ArrayIsEmpty_ThrowArgumentException() =>
             Assert.Throws<ArgumentException>(() => FilterByDigit(new int[0], 0),
                 "Array can not be empty.");
 
         [Test]
         [Category("Exception tests.")]
-        public void FilterByDigit_Array_Is_Null_Throw_ArgumentNullException() =>
+        public void FilterByDigit_ArrayIsNull_ThrowArgumentNullException() =>
             Assert.Throws<ArgumentNullException>(() => FilterByDigit(null, 0),
                 "Array can not be null.");
 
         [Test]
         [Category("Exception tests.")]
-        public void FilterByDigit_Expected_Digit_Less_Zero_Throw_ArgumentOutOfRangeException() =>
+        public void FilterByDigit_DigitLessZero_ThrowArgumentOutOfRangeException() =>
             Assert.Throws<ArgumentOutOfRangeException>(() => FilterByDigit(new int[] {1, 2}, -1),
                 "Expected digit can not be less than zero.");
 
         [Test]
         [Category("Exception tests.")]
-        public void FilterByDigit_Expected_Digit_More_Than_Nine_Throw_ArgumentOutOfRangeException() =>
+        public void FilterByDigit_DigitMoreThanNine_ThrowArgumentOutOfRangeException() =>
             Assert.Throws<ArgumentOutOfRangeException>(() => FilterByDigit(new int[] {1, 2}, 20),
                 "Expected digit can not be more than nine.");
 
         [Test]
         [Category("Performance tests.")]
-        public void FilterByDigit_Performance_Test()
+        public void FilterByDigit_PerformanceTest()
         {
             int sourceLength = 100_000_000;
             int digit = 8;
