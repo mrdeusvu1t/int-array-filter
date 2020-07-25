@@ -1,45 +1,68 @@
-﻿using System;
+using System;
+using System.Linq;
 using NUnit.Framework;
+using static FilterTask.ArrayExtension;
 
 #pragma warning disable CA1707
 
-namespace TransformerTask.Tests
-{
-    [TestFixture]
-    public class TransformerTests
+namespace FilterTask.Tests
+{ 
+    public class ArrayExtensionTests
     {
-        [TestCase(new[] { 122.625, -255.255, 255.255, 4294967295.012, -451387.2345, 0.2345E-12 },
-            ExpectedResult = new[]
-            {
-                "0100000001011110101010000000000000000000000000000000000000000000",
-                "1100000001101111111010000010100011110101110000101000111101011100",
-                "0100000001101111111010000010100011110101110000101000111101011100",
-                "0100000111101111111111111111111111111111111000000110001001001110",
-                "1100000100011011100011001110110011110000001000001100010010011100",
-                "0011110101010000100000000110000001011111000011101110100001011011",
-            })]
-        [TestCase(new[] { double.PositiveInfinity, 0.0, double.NegativeInfinity, -0.0, double.Epsilon, double.NaN },
-            ExpectedResult = new[]
-            {
-                "0111111111110000000000000000000000000000000000000000000000000000",
-                "0000000000000000000000000000000000000000000000000000000000000000",
-                "1111111111110000000000000000000000000000000000000000000000000000",
-                "1000000000000000000000000000000000000000000000000000000000000000",
-                "0000000000000000000000000000000000000000000000000000000000000001",
-                "1111111111111000000000000000000000000000000000000000000000000000",
-            })]
-        public string[] TransformTests(double[] source)
+        [Category("Successful tests.")]
+        [TestCase(new[] { 2212332, 1405644, -1236674 }, 0, ExpectedResult = new[] { 1405644 })]
+        [TestCase(new[] { 53, 71, -24, 1001, 32, 1005 }, 2, ExpectedResult = new[] { -24, 32 })]
+        [TestCase(new[] { -27, 173, 371132, 7556, 7243, 10017 }, 7, ExpectedResult = new[] { -27, 173, 371132, 7556, 7243, 10017 })]
+        [TestCase(new[] { 7, 2, 5, 5, -1, -1, 2 }, 9, ExpectedResult = new int[0])]
+        [TestCase(new[] { 7, 1, 2, 3, 4, 5, 6, 7, 68, 69, 70, 15, 17 }, 7, ExpectedResult = new int[] { 7, 7, 70, 17 })]
+        [TestCase(new[] { -123, 123, 2202, 3333, 4444, 55055, 0, -7, 5402, 9, 0, -150, 287 }, 0, ExpectedResult = new int[] { 2202, 55055, 0, 5402, 0, -150 })]
+        [TestCase(new[] { -123, 123, 2202, 3333, 4444, 55055, 0, -7, 5402, 9, 0, -150, 287 }, 2, ExpectedResult = new int[] { -123, 123, 2202, 5402, 287 })]
+        [TestCase(new[] { -583, -7481, -24, -81001, -32, -10805 }, 8, ExpectedResult = new[] { -583, -7481, -81001, -10805 })]
+        [TestCase(new[] { 111, 111, 111, 11111111 }, 1, ExpectedResult = new[] { 111, 111, 111, 11111111 })]
+        [TestCase(new[] { 111, 111, 111, 11111111 }, 5, ExpectedResult = new int[0])]
+        [TestCase(new[] { -1, 0, 111, -11, -1 }, 1, ExpectedResult = new int[] { -1, 111, -11, -1 })]
+        [TestCase(new[] { 0, 0, 0, 0, 0 }, 5, ExpectedResult = new int[0] { })]
+        [TestCase(new[] { 0, 0, 0, 0, 0 }, 0, ExpectedResult = new int[] { 0, 0, 0, 0, 0 })]
+        public int[] FilterByDigit_WithCorrectDigits_ReturnNewArray(int[] array, int digit) => FilterByDigit(array, digit);
+
+        [Test]
+        [Category("Exception tests.")]
+        public void FilterByDigit_ArrayIsEmpty_ThrowArgumentException() =>
+            Assert.Throws<ArgumentException>(() => FilterByDigit(Array.Empty<int>(), 0), "Array can not be empty.");
+
+        [Test]
+        [Category("Exception tests.")]
+        public void FilterByDigit_ArrayIsNull_ThrowArgumentNullException() => Assert.Throws<ArgumentNullException>(
+            () => FilterByDigit(null, 0), "Array can not be null.");
+
+        [Test]
+        [Category("Exception tests.")]
+        public void FilterByDigit_DigitLessZero_ThrowArgumentOutOfRangeException() => Assert.Throws<ArgumentOutOfRangeException>(
+            () => FilterByDigit(new int[] { 1, 2 }, -1), "Expected digit can not be less than zero.");
+
+        [Test]
+        [Category("Exception tests.")]
+        public void FilterByDigit_DigitMoreThanNine_ThrowArgumentOutOfRangeException() => Assert.Throws<ArgumentOutOfRangeException>(
+            () => FilterByDigit(new int[] { 1, 2 }, 20), "Expected digit can not be more than nine.");
+
+        [Test]
+        [Category("Performance tests.")]
+        public void FilterByDigit_PerformanceTest()
         {
-            var transformer = new Transformer();
-            return transformer.Transform(source);
-        }
+            int sourceLength = 100_000_000;
+            int digit = 8;
+            int[] source = new int[sourceLength];
+            int count = 5, step = sourceLength / count;
+            for (int i = 0; i < sourceLength; i += step)
+            {
+                source[i] = digit;
+            }  
 
-        [Test]
-        public void Transform_ArrayIsNull_ThrowArgumentNullException() => Assert.Throws<ArgumentNullException>(
-            () => new Transformer().Transform(null), "Array cannot be null.");
-
-        [Test]
-        public void Transform_ArrayIsEmpty_ThrowArgumentException() => Assert.Throws<ArgumentException>(
-            () => new Transformer().Transform(Array.Empty<double>()), "Array cannot be empty.");
-    }
-}
+            int[] expected = Enumerable.Repeat(digit, count).ToArray();
+            
+            int[] actual = FilterByDigit(source, digit);
+            
+            CollectionAssert.AreEqual(expected, actual);
+         } 
+     } 
+ } 
