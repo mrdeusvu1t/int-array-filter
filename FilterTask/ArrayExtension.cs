@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace FilterTask
 {
@@ -18,7 +19,40 @@ namespace FilterTask
         /// </example>
         public static int[] FilterByDigit(int[] source, int digit)
         {
-            throw new NotImplementedException("You need to implement this function.");
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source), "array is null");
+            }
+
+            if (source.Length == 0)
+            {
+                throw new ArgumentException(nameof(source), "array is empty");
+            }
+
+            if (digit < 0 || digit > 9)
+            {
+                throw new ArgumentOutOfRangeException(nameof(digit), "digit lees zero or more than nine");
+            }
+
+            List<int> numbers = new List<int>();
+            var str = digit.ToString();
+
+            for (int i = 0; i < source.Length; i++)
+            {
+                var temp = source[i].ToString();
+                int j = 0;
+                do
+                {
+                    if (temp[j].ToString() == str)
+                    {
+                        numbers.Add(source[i]);
+                        break;
+                    }
+                    j++;
+                } while (j < temp.Length);
+            }
+
+            return numbers.ToArray();
         }
     }
 }
